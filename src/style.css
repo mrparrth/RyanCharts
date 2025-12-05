@@ -1,0 +1,25 @@
+@import "tailwindcss";
+
+:root {
+  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+  background-color: #F3F4F6;
+  --color-primary: #1B3B5A;
+  --color-secondary: #D97706;
+  --color-accent: #10B981;
+}
+
+@theme {
+  --color-primary: #1B3B5A;
+  --color-secondary: #D97706;
+  --color-accent: #10B981;
+  --color-background: #F3F4F6;
+  --color-surface: #FFFFFF;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+}
