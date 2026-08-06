@@ -6,6 +6,8 @@ import { onMounted, ref, computed } from "vue";
 export const useAppStore = defineStore("app", () => {
   const invoices = ref([]);
   const expenses = ref([]);
+  const unlinkedInvoices = ref([]);
+  const unlinkedExpenses = ref([]);
   const clients = ref([]);
   const projects = ref([]);
   const isLoading = ref(false);
@@ -22,6 +24,7 @@ export const useAppStore = defineStore("app", () => {
     projects.value = [];
     try {
       const result = await API.getData();
+      console.log(result.invoices[0]);
 
       // Process Clients first for lookup
       clients.value = result.clients;
@@ -55,6 +58,9 @@ export const useAppStore = defineStore("app", () => {
       });
 
       invoices.value = filteredInvoices;
+      unlinkedInvoices.value = filteredInvoices.filter(
+  (invoice) => !invoice.projectNumber
+);
 
       // Process Expenses
       const processedExpenses = result.expenses.map((e) => {
@@ -86,6 +92,9 @@ export const useAppStore = defineStore("app", () => {
       });
 
       expenses.value = filteredExpenses;
+      unlinkedExpenses.value = filteredExpenses.filter(
+  (expense) => !expense.projectNumber
+);
 
       // Group Invoices by Project
       filteredInvoices.forEach((i) => {
@@ -345,5 +354,7 @@ export const useAppStore = defineStore("app", () => {
     selectedMonth,
     selectedEmployees,
     saveEmployeePreferences,
+    unlinkedInvoices,
+    unlinkedExpenses,
   };
 });
