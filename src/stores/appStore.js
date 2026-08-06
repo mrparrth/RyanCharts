@@ -16,6 +16,9 @@ export const useAppStore = defineStore("app", () => {
 
   const getData = async () => {
     isLoading.value = true;
+    invoicesByProject.value.clear();
+    expensesByProject.value.clear();
+    projects.value = [];
     try {
       const result = await API.getData();
 
