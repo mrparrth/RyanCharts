@@ -35,4 +35,7 @@ export class API {
     const result = await this.execute("getData", {});
     return result;
   }
+  static async saveEmployeePreferences(data) {
+  return await this.execute("saveEmployeePreferences", data);
+}
 }
