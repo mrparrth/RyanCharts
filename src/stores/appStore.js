@@ -13,6 +13,7 @@ export const useAppStore = defineStore("app", () => {
   const expensesByProject = ref(new Map());
   const selectedYear = ref(null);
   const selectedMonth = ref(null);
+  const selectedEmployees = ref([]);
 
   const getData = async () => {
     isLoading.value = true;
@@ -40,19 +41,20 @@ export const useAppStore = defineStore("app", () => {
         return i;
       });
       const filteredInvoices = processedInvoices.filter((invoice) => {
-  if (!selectedYear.value || !selectedMonth.value) {
-    return true;
-  }
+        if (!selectedYear.value || !selectedMonth.value) {
+          return true;
+        }
 
-  const invoiceDate = new Date(invoice.create_date);
+        const invoiceDate = new Date(invoice.create_date);
 
-  return (
-    invoiceDate.getFullYear() === selectedYear.value &&
-    invoiceDate.toLocaleString("default", { month: "long" }) === selectedMonth.value
-  );
-});
+        return (
+          invoiceDate.getFullYear() === selectedYear.value &&
+          invoiceDate.toLocaleString("default", { month: "long" }) ===
+            selectedMonth.value
+        );
+      });
 
-invoices.value = filteredInvoices;
+      invoices.value = filteredInvoices;
 
       // Process Expenses
       const processedExpenses = result.expenses.map((e) => {
@@ -70,19 +72,20 @@ invoices.value = filteredInvoices;
         return e;
       });
       const filteredExpenses = processedExpenses.filter((expense) => {
-  if (!selectedYear.value || !selectedMonth.value) {
-    return true;
-  }
+        if (!selectedYear.value || !selectedMonth.value) {
+          return true;
+        }
 
-  const expenseDate = new Date(expense.date);
+        const expenseDate = new Date(expense.date);
 
-  return (
-    expenseDate.getFullYear() === selectedYear.value &&
-    expenseDate.toLocaleString("default", { month: "long" }) === selectedMonth.value
-  );
-});
+        return (
+          expenseDate.getFullYear() === selectedYear.value &&
+          expenseDate.toLocaleString("default", { month: "long" }) ===
+            selectedMonth.value
+        );
+      });
 
-expenses.value = filteredExpenses;
+      expenses.value = filteredExpenses;
 
       // Group Invoices by Project
       filteredInvoices.forEach((i) => {
@@ -172,6 +175,18 @@ expenses.value = filteredExpenses;
       isLoading.value = false;
     }
   };
+  // to save employee preferences 
+  const saveEmployeePreferences = async (employees) => {
+    selectedEmployees.value = employees;
+
+    try {
+      await API.saveEmployeePreferences({
+        employees,
+      });
+    } catch (err) {
+      console.log("Backend not available yet.", err);
+    }
+  };
 
   const clientData = computed(() => {
     const clientMap = {};
@@ -222,7 +237,7 @@ expenses.value = filteredExpenses;
     });
 
     return Object.values(clientMap).sort(
-      (a, b) => b.totalInvoices - a.totalInvoices
+      (a, b) => b.totalInvoices - a.totalInvoices,
     );
   });
 
@@ -304,7 +319,7 @@ expenses.value = filteredExpenses;
           percProjectRevenue,
           percProjectExpense,
           projects: Array.from(emp.projects.values()).sort(
-            (a, b) => b.employeeExpense - a.employeeExpense
+            (a, b) => b.employeeExpense - a.employeeExpense,
           ),
         };
       })
@@ -328,5 +343,7 @@ expenses.value = filteredExpenses;
     expensesByProject,
     selectedYear,
     selectedMonth,
+    selectedEmployees,
+    saveEmployeePreferences,
   };
 });
