@@ -8,22 +8,38 @@
         </div>
 
         <v-card elevation="2" rounded="lg">
-            <v-data-table :headers="headers" :items="appStore.clientData"
-                :sort-by="[{ key: 'totalInvoices', order: 'desc' }]" class="elevation-0" hover :items-per-page="-1"
-                hide-default-footer>
+            <v-data-table
+                :headers="headers"
+                :items="appStore.clientData"
+                :sort-by="[{ key: 'totalInvoices', order: 'desc' }]"
+                class="elevation-0"
+                hover
+                :items-per-page="-1"
+                hide-default-footer
+            >
                 <template v-slot:item.name="{ item }">
                     <div class="d-flex align-center">
-                        <a :href="`https://my.freshbooks.com/#/client/${item.id}`" target="_blank"
-                            rel="noopener noreferrer" class="mr-1 d-flex align-center" style="text-decoration: none;">
-                            <img src="https://my.freshbooks.com/assets/images/freshbooks-leaf-midnight-blue.0287aeec34d07a639c10.svg"
-                                style="height: 20px; width: auto;" alt="FreshBooks" />
+                        <a
+                            :href="`https://my.freshbooks.com/#/client/${item.id}`"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            class="mr-1 d-flex align-center"
+                            style="text-decoration: none;"
+                        >
+                            <img
+                                src="https://my.freshbooks.com/assets/images/freshbooks-leaf-midnight-blue.0287aeec34d07a639c10.svg"
+                                style="height: 20px; width: auto;"
+                                alt="FreshBooks"
+                            />
                         </a>
                         <div class="font-weight-bold">{{ item.name }}</div>
                     </div>
                 </template>
+
                 <template v-slot:item.organization="{ item }">
                     <div>{{ item.organization }}</div>
                 </template>
+
                 <template v-slot:item.projects="{ item }">
                     <span>
                         {{ item.projects.length }}
@@ -42,27 +58,49 @@
                     </span>
                 </template>
 
+                <template v-slot:item.profit="{ item }">
+                    <span
+                        :class="item.totalInvoices - item.totalExpenses >= 0 ? 'text-success' : 'text-error'"
+                        class="font-weight-medium"
+                    >
+                        {{ formatCurrency(item.totalInvoices - item.totalExpenses) }}
+                    </span>
+                </template>
 
+                <template v-slot:item.profitPercentage="{ item }">
+                    <span class="font-weight-medium">
+                        {{
+                            item.totalInvoices > 0
+                                ? (((item.totalInvoices - item.totalExpenses) / item.totalInvoices) * 100).toFixed(2)
+                                : 0
+                        }}%
+                    </span>
+                </template>
             </v-data-table>
         </v-card>
     </Layout1>
 </template>
 
 <script setup>
-import { useAppStore } from '../stores/appStore';
-import Layout1 from '../layouts/Layout1.vue';
+import { useAppStore } from "../stores/appStore";
+import Layout1 from "../layouts/Layout1.vue";
 
 const appStore = useAppStore();
 
 const headers = [
-    { title: 'Client Name', align: 'start', key: 'name', sortable: true },
-    { title: 'Organization', align: 'start', key: 'organization', sortable: true },
-    { title: 'Projects Count', align: 'start', key: 'projects', sortable: true, value: item => item.projects.length },
-    { title: 'Total Invoices', align: 'start', key: 'totalInvoices', sortable: true },
-    { title: 'Total Expenses', align: 'start', key: 'totalExpenses', sortable: true },
+    { title: "Client Name", align: "start", key: "name", sortable: true },
+    { title: "Organization", align: "start", key: "organization", sortable: true },
+    { title: "Projects Count",align: "start", key: "projects", sortable: true, value: (item) => item.projects.length},
+    { title: "Total Invoices", align: "start", key: "totalInvoices", sortable: true },
+    { title: "Total Expenses", align: "start", key: "totalExpenses", sortable: true },
+    { title: "Profit $", align: "start", key: "profit", sortable: true },
+    { title: "Profit %", align: "start", key: "profitPercentage", sortable: true },
 ];
 
 const formatCurrency = (value) => {
-    return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(value);
+    return new Intl.NumberFormat("en-US", {
+        style: "currency",
+        currency: "USD",
+    }).format(value);
 };
 </script>

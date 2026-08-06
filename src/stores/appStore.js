@@ -11,6 +11,8 @@ export const useAppStore = defineStore("app", () => {
   const isLoading = ref(false);
   const invoicesByProject = ref(new Map());
   const expensesByProject = ref(new Map());
+  const selectedYear = ref(null);
+  const selectedMonth = ref(null);
 
   const getData = async () => {
     isLoading.value = true;
@@ -34,7 +36,20 @@ export const useAppStore = defineStore("app", () => {
         i.paidAmount = i.paidAmount * 1;
         return i;
       });
-      invoices.value = processedInvoices;
+      const filteredInvoices = processedInvoices.filter((invoice) => {
+  if (!selectedYear.value || !selectedMonth.value) {
+    return true;
+  }
+
+  const invoiceDate = new Date(invoice.create_date);
+
+  return (
+    invoiceDate.getFullYear() === selectedYear.value &&
+    invoiceDate.toLocaleString("default", { month: "long" }) === selectedMonth.value
+  );
+});
+
+invoices.value = filteredInvoices;
 
       // Process Expenses
       const processedExpenses = result.expenses.map((e) => {
@@ -51,10 +66,23 @@ export const useAppStore = defineStore("app", () => {
         e.amount = e.amount * 1;
         return e;
       });
-      expenses.value = processedExpenses;
+      const filteredExpenses = processedExpenses.filter((expense) => {
+  if (!selectedYear.value || !selectedMonth.value) {
+    return true;
+  }
+
+  const expenseDate = new Date(expense.date);
+
+  return (
+    expenseDate.getFullYear() === selectedYear.value &&
+    expenseDate.toLocaleString("default", { month: "long" }) === selectedMonth.value
+  );
+});
+
+expenses.value = filteredExpenses;
 
       // Group Invoices by Project
-      processedInvoices.forEach((i) => {
+      filteredInvoices.forEach((i) => {
         if (i.projectNumber) {
           if (!invoicesByProject.value.has(i.projectNumber)) {
             invoicesByProject.value.set(i.projectNumber, []);
@@ -64,7 +92,7 @@ export const useAppStore = defineStore("app", () => {
       });
 
       // Group Expenses by Project
-      processedExpenses.forEach((e) => {
+      filteredExpenses.forEach((e) => {
         if (e.projectNumber) {
           if (!expensesByProject.value.has(e.projectNumber)) {
             expensesByProject.value.set(e.projectNumber, []);
@@ -295,5 +323,7 @@ export const useAppStore = defineStore("app", () => {
     employeeData,
     invoicesByProject,
     expensesByProject,
+    selectedYear,
+    selectedMonth,
   };
 });
