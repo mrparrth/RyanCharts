@@ -10,7 +10,7 @@
         <v-card elevation="2" rounded="lg">
             <v-data-table :headers="headers" :items="appStore.employeeData"
                 :sort-by="[{ key: 'projectExpense', order: 'desc' }]" class="elevation-0" hover :items-per-page="-1"
-                hide-default-footer show-expand item-value="name" v-model:expanded="expanded">
+                hide-default-footer item-value="name">
                 <template v-slot:item.name="{ item }">
                     <div class="d-flex align-center">
                         <v-avatar size="32" color="accent" variant="tonal" class="mr-3">
@@ -56,16 +56,32 @@
                     </span>
                 </template>
 
-                <template v-slot:expanded-row="{ columns, item }">
-                    <tr>
-                        <td :colspan="columns.length" class="pa-4 bg-grey-lighten-4">
-                            <EmployeeProjects :projects="item.projects" :nonProjectExpenses="item.nonProjectExpenses"
-                                :totalExpense="item.totalExpense" />
-                        </td>
-                    </tr>
+                <template v-slot:item.action="{ item }">
+                    <v-btn color="primary" variant="outlined" size="small" @click="openEmployee(item)">
+                        View Details
+                    </v-btn>
                 </template>
             </v-data-table>
         </v-card>
+        <v-dialog v-model="employeeDialog" max-width="1200">
+            <v-card>
+                <v-card-title class="d-flex justify-space-between align-center">
+                    <span class="text-h6">
+                        {{ selectedEmployee?.name }}
+                    </span>
+
+                    <v-btn icon="mdi-close" variant="text" @click="employeeDialog = false" />
+                </v-card-title>
+
+                <v-divider></v-divider>
+
+                <v-card-text>
+                    <EmployeeProjects v-if="selectedEmployee" :projects="selectedEmployee.projects"
+                        :nonProjectExpenses="selectedEmployee.nonProjectExpenses"
+                        :totalExpense="selectedEmployee.totalExpense" />
+                </v-card-text>
+            </v-card>
+        </v-dialog>
     </Layout1>
 </template>
 
@@ -76,7 +92,9 @@ import { EmployeeProjects, FinancialOverview } from '../components';
 import Layout1 from '../layouts/Layout1.vue';
 
 const appStore = useAppStore();
-const expanded = ref([]);
+const employeeDialog = ref(false);
+const selectedEmployee = ref(null);
+
 
 const headers = [
     { title: 'Employee Name', align: 'start', key: 'name', sortable: true },
@@ -86,11 +104,15 @@ const headers = [
     { title: 'Total Non Project Expense', align: 'end', key: 'nonProjectExpense', sortable: true },
     { title: '% of Project Revenue', align: 'end', key: 'percProjectRevenue', sortable: true },
     { title: '% of Project Expense', align: 'end', key: 'percProjectExpense', sortable: true },
-    { title: '', key: 'data-table-expand' },
+    { title: 'Action', key: 'action' },
 ];
 
 const formatCurrency = (value) => {
     return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(value);
+};
+const openEmployee = (employee) => {
+    selectedEmployee.value = employee;
+    employeeDialog.value = true;
 };
 
 
