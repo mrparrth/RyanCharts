@@ -38,6 +38,27 @@
                     </div>
                 </v-expansion-panel-title>
                 <v-expansion-panel-text>
+
+                    <div class="d-flex justify-end mb-4 ga-2">
+                        <v-btn color="primary" size="small" @click="openInvoiceDialog(project)">
+                            Link Invoice
+                        </v-btn>
+
+                        <v-btn color="success" size="small" @click="openExpenseDialog(project)">
+                            Add Expense
+                        </v-btn>
+                    </div>
+                    <div v-if="project.linkedInvoices && project.linkedInvoices.length" class="mb-3">
+                        <div class="font-weight-bold mb-2">
+                            Linked Invoices
+                        </div>
+
+                        <v-chip v-for="invoice in project.linkedInvoices" :key="invoice.id" color="primary"
+                            class="mr-2 mb-2">
+                            {{ invoice.number }}
+                        </v-chip>
+                    </div>
+
                     <v-table density="compact" class="fixed-layout-table">
                         <thead>
                             <tr>
@@ -97,6 +118,70 @@
     <div v-else class="text-center pa-4 text-medium-emphasis">
         No expenses found.
     </div>
+
+    <!-- Link Invoice Dialog -->
+    <!-- Link Invoice Dialog -->
+    <v-dialog v-model="invoiceDialog" max-width="500">
+        <v-card>
+
+            <v-card-title>
+                Link Invoice
+            </v-card-title>
+
+            <v-card-text>
+                <v-text-field label="Invoice Number" v-model="invoiceNumber" />
+            </v-card-text>
+
+            <v-card-actions>
+                <v-spacer></v-spacer>
+
+                <v-btn variant="text" @click="invoiceDialog = false">
+                    Cancel
+                </v-btn>
+
+                <v-btn color="primary" @click="saveInvoice">
+                    Save
+                </v-btn>
+
+            </v-card-actions>
+
+        </v-card>
+    </v-dialog>
+
+    <!-- Add Expense Dialog -->
+    <v-dialog v-model="expenseDialog" max-width="500">
+        <v-card>
+
+            <v-card-title>
+                Add Expense
+            </v-card-title>
+
+            <v-card-text>
+
+                <v-text-field label="Amount" v-model="expense.amount" />
+
+                <v-text-field label="Date" type="date" v-model="expense.date" />
+
+                <v-textarea label="Note" v-model="expense.note" />
+
+            </v-card-text>
+
+            <v-card-actions>
+
+                <v-spacer></v-spacer>
+
+                <v-btn variant="text" @click="expenseDialog = false">
+                    Cancel
+                </v-btn>
+
+                <v-btn color="success" @click="saveExpense">
+                    Save
+                </v-btn>
+
+            </v-card-actions>
+
+        </v-card>
+    </v-dialog>
 </template>
 
 <script setup>
@@ -127,17 +212,49 @@ const openFreshbooksExpense = (expenseId) => {
 };
 
 const expandedPanels = ref([]);
+const invoiceDialog = ref(false);
+const expenseDialog = ref(false);
+const invoiceNumber = ref("");
+const selectedProject = ref(null);
+const expense = ref({
+    amount: "",
+    date: "",
+    note: ""
+});
 
 const allExpanded = computed(() => {
     return props.projects && expandedPanels.value.length === props.projects.length;
 });
 
 const toggleExpand = () => {
+
     if (allExpanded.value) {
         expandedPanels.value = [];
     } else {
         expandedPanels.value = props.projects.map((_, index) => index);
     }
+};
+const openInvoiceDialog = (project) => {
+
+    selectedProject.value = project;
+
+    invoiceNumber.value = "";
+
+    invoiceDialog.value = true;
+
+}
+const openExpenseDialog = (project) => {
+
+    selectedProject.value = project;
+
+    expense.value = {
+        amount: "",
+        date: "",
+        note: ""
+    };
+
+    expenseDialog.value = true;
+
 };
 
 // Expand all panels by default when component mounts or projects change
@@ -155,6 +272,37 @@ watch(() => props.projects, () => {
 
 const formatCurrency = (value) => {
     return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(value);
+};
+
+const saveInvoice = () => {
+
+    if (!selectedProject.value.linkedInvoices) {
+        selectedProject.value.linkedInvoices = [];
+    }
+
+    selectedProject.value.linkedInvoices.push({
+        id: Date.now(),
+        number: invoiceNumber.value
+    });
+
+    invoiceDialog.value = false;
+
+};
+const saveExpense = () => {
+
+    if (!selectedProject.value.expenses) {
+        selectedProject.value.expenses = [];
+    }
+
+    selectedProject.value.expenses.push({
+        id: Date.now(),
+        date: expense.value.date,
+        amount: Number(expense.value.amount),
+        notes: expense.value.note
+    });
+
+    expenseDialog.value = false;
+
 };
 </script>
 
