@@ -45,7 +45,7 @@
                         </v-btn>
 
                         <v-btn color="success" size="small" @click="openExpenseDialog(project)">
-                            Add Expense
+                            Link Expense
                         </v-btn>
                     </div>
                     <div v-if="project.linkedInvoices && project.linkedInvoices.length" class="mb-3">
@@ -153,7 +153,7 @@
         <v-card>
 
             <v-card-title>
-                Add Expense
+                Link Expense
             </v-card-title>
 
             <v-card-text>
